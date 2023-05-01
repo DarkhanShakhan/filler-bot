@@ -1,10 +1,14 @@
 use std::io::{self, BufRead};
 mod anfield;
 mod piece;
+mod player;
 mod util;
 use anfield::*;
 use piece::*;
 use util::*;
+use player::*;
+mod algorithm;
+use algorithm::*;
 fn main() {
     let stdin = io::stdin();
     let mut anfield = Anfield::new();
@@ -26,8 +30,7 @@ fn main() {
             piece.collect(input);
             if !piece.is_collect() {
                 //TODO: run the algorithm
-                println!("piece: {}", piece.get_piece().len());
-                println!("anfield: {:?}", anfield.get_board().len());
+                find_available_options(anfield.get_board(), piece.get_piece(), Player::Player1);
                 piece.clear();
                 anfield.clear();
             }
