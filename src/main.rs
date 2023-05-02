@@ -5,8 +5,8 @@ mod player;
 mod util;
 use anfield::*;
 use piece::*;
-use util::*;
 use player::*;
+use util::*;
 mod algorithm;
 use algorithm::*;
 fn main() {
@@ -30,7 +30,12 @@ fn main() {
             piece.collect(input);
             if !piece.is_collect() {
                 //TODO: run the algorithm
-                find_available_options(anfield.get_board(), piece.get_piece(), Player::Player1);
+                let opts = find_available_options(
+                    anfield.is_first(),
+                    anfield.get_board(),
+                    piece.get_piece(),
+                );
+                println!("{:?}", opts);
                 piece.clear();
                 anfield.clear();
             }
