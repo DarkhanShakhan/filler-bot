@@ -1,5 +1,5 @@
 pub struct Piece {
-    piece: Vec<String>,
+    piece: Vec<Vec<char>>,
     size: (i32, i32),
     is_collect: bool,
     counter: i32,
@@ -33,7 +33,7 @@ impl Piece {
     }
 
     pub fn collect(&mut self, input: String) {
-        self.piece.push(input);
+        self.piece.push(input.chars().collect());
         self.counter += 1;
         if self.counter >= self.size.1 {
             self.is_collect = false;
@@ -44,7 +44,7 @@ impl Piece {
         self.piece.clear();
     }
 
-    pub fn get_piece(&mut self) -> &Vec<String> {
+    pub fn get_piece(&mut self) -> &Vec<Vec<char>> {
         self.piece.as_mut()
     }
 }
