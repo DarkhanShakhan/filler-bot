@@ -3,7 +3,6 @@ pub struct Anfield {
     size: (i32, i32),
     is_collect: bool,
     counter: i32,
-    first: bool,
 }
 
 //TODO: make board stable; without collecting it all the time; update it instead
@@ -14,7 +13,6 @@ impl Anfield {
             size: (0, 0),
             is_collect: false,
             counter: 0,
-            first: true,
         }
     }
 
@@ -31,9 +29,6 @@ impl Anfield {
         self.board.len() == 0
     }
 
-    pub fn is_first(&self) -> bool {
-        self.first
-    }
     pub fn set_size(&mut self, size: (i32, i32)) {
         self.size = size
     }
@@ -50,7 +45,6 @@ impl Anfield {
 
     pub fn clear(&mut self) {
         self.board.clear();
-        self.first = false;
     }
 
     pub fn get_board(&mut self) -> &Vec<Vec<char>> {

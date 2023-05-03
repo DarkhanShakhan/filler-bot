@@ -1,7 +1,6 @@
 use std::vec;
 
 pub fn find_available_options(
-    first: bool,
     anfield: &Vec<Vec<char>>,
     piece: &Vec<Vec<char>>,
 ) -> Vec<(usize, usize)> {
@@ -9,8 +8,8 @@ pub fn find_available_options(
     let mut out = vec![];
     for i in 0..=anfield.len() - piece.len() {
         for j in 0..=anfield[0].len() - piece[0].len() {
-            match is_available(first, anfield, piece, i, j) {
-                true => out.push((j,i)),
+            match is_available(anfield, piece, i, j) {
+                true => out.push((j, i)),
                 false => continue,
             }
         }
@@ -19,7 +18,6 @@ pub fn find_available_options(
 }
 
 fn is_available(
-    first: bool,
     anfield: &Vec<Vec<char>>,
     piece: &Vec<Vec<char>>,
     i: usize,
@@ -35,15 +33,26 @@ fn is_available(
             if anf_char == '.' || piece_char == '.' {
                 continue;
             }
-            if first && anf_char == '@' {
-                return piece_char == 'O'
-            }
-            if !is_overlap && anf_char == 'a' && piece_char == 'O' {
+            if !is_overlap && (anf_char == 'a' || anf_char =='@') && piece_char == 'O' {
                 is_overlap = true;
                 continue;
             }
-            return false
+            return false;
         }
     }
-   return is_overlap
+    return is_overlap;
+}
+
+pub fn get_best_option(opts: Vec<(usize, usize)>) -> (usize, usize) {
+    let mut max = 0.0;
+    let mut curr: f32;
+    let mut out = (0, 0);
+    for (x, y) in opts {
+        curr = ((x * x + y * y) as f32).sqrt();
+        if curr > max {
+            out = (x, y);
+            max = curr;
+        }
+    }
+    out
 }

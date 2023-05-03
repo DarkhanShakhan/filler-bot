@@ -31,11 +31,13 @@ fn main() {
             if !piece.is_collect() {
                 //TODO: run the algorithm
                 let opts = find_available_options(
-                    anfield.is_first(),
                     anfield.get_board(),
                     piece.get_piece(),
                 );
-                println!("{:?}", opts);
+                // println!("{:?}", opts);
+                let res = get_best_option(opts);
+
+                println!("{} {}", res.0, res.1);
                 piece.clear();
                 anfield.clear();
             }
