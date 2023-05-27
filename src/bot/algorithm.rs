@@ -17,12 +17,7 @@ pub fn find_available_options(
     out
 }
 
-fn is_available(
-    anfield: &Vec<Vec<char>>,
-    piece: &Vec<Vec<char>>,
-    i: usize,
-    j: usize,
-) -> bool {
+fn is_available(anfield: &Vec<Vec<char>>, piece: &Vec<Vec<char>>, i: usize, j: usize) -> bool {
     let mut anf_char: char;
     let mut piece_char: char;
     let mut is_overlap = false;
@@ -33,14 +28,14 @@ fn is_available(
             if anf_char == '.' || piece_char == '.' {
                 continue;
             }
-            if !is_overlap && (anf_char == 'a' || anf_char =='@') && piece_char == 'O' {
+            if !is_overlap && (anf_char == 'a' || anf_char == '@') && piece_char == 'O' {
                 is_overlap = true;
                 continue;
             }
             return false;
         }
     }
-    return is_overlap;
+    is_overlap
 }
 
 pub fn get_best_option(opts: Vec<(usize, usize)>) -> (usize, usize) {
