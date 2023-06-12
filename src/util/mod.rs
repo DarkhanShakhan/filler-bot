@@ -1,3 +1,4 @@
+//TODO: consts
 pub fn is_piece_info(input: &str) -> bool {
     input.starts_with("Piece")
 }
@@ -6,21 +7,33 @@ pub fn is_anfield_info(input: &str) -> bool {
     input.starts_with("Anfield")
 }
 
-//FIXME: functional programming
-pub fn get_size(input: &str) -> Option<(i32, i32)> {
-    let mut iter = input.strip_suffix("char")?.split_whitespace();
-    let first_num = iter.nth(1)?;
-    let second_num = iter.next()?;
-    let w: i32 = first_num.parse().ok()?;
-    let h: i32 = second_num.parse().ok()?;
-    Some((w, h))
+pub fn is_player_info(input: &str) -> bool {
+    input.starts_with("$$$ exec p1 :")
 }
 
-pub fn get_line(input: &str) -> Option<&str> {
+pub fn is_player_1(input: &str) -> bool {
+    input == "$$$ exec p1 : [solution/filler_bot]"
+}
+
+pub fn parse_size(input: &str) -> Option<(i32, i32)> {
+    let size: Vec<i32> = input
+        .strip_suffix(':')?
+        .split_whitespace()
+        .rev()
+        .take(2)
+        .map(|item| item.parse::<i32>().unwrap_or_default())
+        .collect();
+    match size.len() {
+        2 => Some((size[1], size[0])),
+        _ => None,
+    }
+}
+
+pub fn parse_line(input: &str) -> Option<&str> {
     input.split_whitespace().last()
 }
 
-pub fn get_bits_from_line(input: &str, compare_to: (char, char)) -> u32 {
+pub fn parse_bits(input: &str, compare_to: (char, char)) -> u32 {
     let mut out = 0;
     for ch in input.chars() {
         out <<= 1;
@@ -38,16 +51,38 @@ pub fn count_overlaps(nbr1: u32, nbr2: u32) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn bits_from_line() {
-        assert!(get_bits_from_line("OOOO$", ('$', 's')) == 1);
-        assert!(get_bits_from_line("O$OO", ('$', 's')) == 4);
-        assert!(get_bits_from_line("OO$O$O$O$O", ('$', 's')) == 170);
+        assert!(parse_bits("OOOO$", ('$', 's')) == 1);
+        assert!(parse_bits("O$OO", ('$', 's')) == 4);
+        assert!(parse_bits("OO$O$O$O$O", ('$', 's')) == 170);
     }
+
     #[test]
     fn count_nbrs_overlaps() {
         assert!(count_overlaps(1, 4) == 0);
         assert!(count_overlaps(1, 3) == 1);
+    }
+
+    #[test]
+    fn line_from_string() {
+        assert!(parse_line("4 OOOOO$") == Some("OOOOO$"));
+        assert!(parse_line("7 OOO$OO") == Some("OOO$OO"));
+    }
+
+    #[test]
+    fn size_from_string() {
+        assert!(parse_size("Anfield 45 50:").unwrap() == (45, 50));
+        assert!(parse_size("Piece 5 7:").unwrap() == (5, 7));
+    }
+
+    #[test]
+    fn is_info() {
+        assert!(is_anfield_info("Anfield 45 45:"));
+        assert!(!is_anfield_info("Any line"));
+        assert!(is_piece_info("Piece 5 7:"));
+        assert!(!is_piece_info("Any line"));
     }
 }
 

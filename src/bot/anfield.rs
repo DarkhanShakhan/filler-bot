@@ -1,5 +1,6 @@
 use crate::util::Validate;
 
+#[derive(Default)]
 pub struct Anfield {
     board: Vec<Vec<char>>,
     size: (i32, i32),

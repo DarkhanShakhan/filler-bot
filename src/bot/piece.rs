@@ -1,5 +1,6 @@
 use crate::util::Validate;
 
+#[derive(Default)]
 pub struct Piece {
     piece: Vec<Vec<char>>,
     size: (i32, i32),

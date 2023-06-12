@@ -17,7 +17,25 @@ pub fn find_available_options(
     out
 }
 
-fn is_available(anfield: &Vec<Vec<char>>, piece: &Vec<Vec<char>>, i: usize, j: usize) -> bool {
+pub fn find_nearest_opposite(anfield: &Vec<Vec<char>>) -> (usize, usize) {
+    let mut nearest = (anfield[0].len(), anfield.len());
+    let mut curr: f32;
+    let mut min = f32::MAX;
+    for i in 0..anfield.len() {
+        for j in 0..anfield[0].len() {
+            if anfield[i][j] == '$' || anfield[i][j] == 's' {
+                curr = ((i * i + j * j) as f32).sqrt();
+                if curr < min {
+                    min = curr;
+                    nearest = (i, j);
+                }
+            }
+        }
+    }
+    nearest
+}
+
+fn is_available(anfield: &[Vec<char>], piece: &Vec<Vec<char>>, i: usize, j: usize) -> bool {
     let mut anf_char: char;
     let mut piece_char: char;
     let mut is_overlap = false;
@@ -38,12 +56,12 @@ fn is_available(anfield: &Vec<Vec<char>>, piece: &Vec<Vec<char>>, i: usize, j: u
     is_overlap
 }
 
-pub fn get_best_option(opts: Vec<(usize, usize)>) -> (usize, usize) {
+pub fn get_best_option(opts: Vec<(usize, usize)>, nearest_opp: (usize, usize)) -> (usize, usize) {
     let mut max = 0.0;
     let mut curr: f32;
     let mut out = (0, 0);
     for (x, y) in opts {
-        curr = ((x * x + y * y) as f32).sqrt();
+        curr = (((nearest_opp.0 - x).pow(2) + (nearest_opp.1 - y).pow(2)) as f32).sqrt();
         if curr > max {
             out = (x, y);
             max = curr;
