@@ -9,6 +9,7 @@ pub struct App {
     anfield: anfield::Anfield,
     piece: piece::Piece,
     player: Player,
+    chars: (char, char),
 }
 
 impl App {
@@ -46,13 +47,35 @@ impl App {
         }
         if util::is_player_info(input) {
             match util::is_player_1(input) {
-                true => self.player = Player::Player1,
-                false => self.player = Player::Player2,
+                true => {
+                    self.player = Player::Player1;
+                    self.chars = ('a', '@')
+                }
+                false => {
+                    self.player = Player::Player2;
+                    self.chars = ('s', '$');
+                }
             }
         }
     }
-    fn collect_piece(&mut self, input: &str) {}
-    fn collect_anfield(&mut self, input: &str) {}
+    fn collect_piece(&mut self, input: &str) {
+        self.piece.collect(util::parse_bits(
+            util::parse_line(input).unwrap(),
+            self.chars,
+        ));
+        if self.piece.is_full() {
+            self.state = State::Algorithm;
+        }
+    }
+    fn collect_anfield(&mut self, input: &str) {
+        self.anfield.collect(util::parse_bits(
+            util::parse_line(input).unwrap(),
+            self.chars,
+        ));
+        if self.anfield.is_full() {
+            self.state = State::Flow;
+        }
+    }
     fn algorithm(&mut self, input: &str) {}
     fn opposite_turn(&mut self, input: &str) {}
 }
