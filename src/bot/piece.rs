@@ -2,7 +2,7 @@ use crate::util::{self, Validate};
 
 #[derive(Default)]
 pub struct Piece {
-    piece: Vec<u32>,
+    piece: Vec<u128>,
     size: (i32, i32),
     counter: i32,
 }
@@ -11,12 +11,18 @@ impl Piece {
     pub fn set_size(&mut self, size: (i32, i32)) {
         self.size = size
     }
+    pub fn get_line_length(&self) -> i32 {
+        self.size.0
+    }
 
-    pub fn collect(&mut self, input: u32) {
+    pub fn collect(&mut self, input: u128) {
+        // println!("piece: {input}");
         self.piece.push(input);
         self.counter += 1;
     }
     pub fn is_full(&self) -> bool {
+        // println!("counter:{}", self.counter);
+        // println!("size:{}", self.size.1);
         self.counter == self.size.1
     }
     pub fn clear(&mut self) {
@@ -24,8 +30,8 @@ impl Piece {
         self.counter = 0;
     }
 
-    pub fn get_piece(&mut self) -> &Vec<u32> {
-        self.piece.as_mut()
+    pub fn get_piece(&self) -> &Vec<u128> {
+        self.piece.as_ref()
     }
 }
 

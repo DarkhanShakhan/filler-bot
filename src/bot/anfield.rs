@@ -2,7 +2,8 @@ use crate::util::Validate;
 
 #[derive(Default)]
 pub struct Anfield {
-    board: Vec<u32>,
+    board: Vec<u128>,
+    opposite: Vec<u128>,
     size: (i32, i32),
     counter: i32,
 }
@@ -10,25 +11,45 @@ pub struct Anfield {
 //TODO: make board stable; without collecting it all the time; update it instead
 impl Anfield {
     pub fn is_full(&self) -> bool {
-        self.counter == self.size.1
+        self.counter == self.size.1 + 1
     }
 
     pub fn set_size(&mut self, size: (i32, i32)) {
         self.size = size
     }
 
-    pub fn collect(&mut self, input: u32) {
-        self.board.push(input);
+    pub fn get_line_length(&self) -> i32 {
+        self.size.0
+    }
+
+    pub fn collect(&mut self, input: u128) {
+        if self.counter > 0 {
+            self.board.push(input);
+        }
+    }
+
+    pub fn collect_opposite(&mut self, input: u128) {
+        if self.counter > 0 {
+            self.opposite.push(input);
+        }
+    }
+
+    pub fn increment_counter(&mut self) {
         self.counter += 1;
     }
 
     pub fn clear(&mut self) {
         self.board.clear();
+        self.opposite.clear();
         self.counter = 0;
     }
 
-    pub fn get_board(&mut self) -> &Vec<u32> {
-        self.board.as_mut()
+    pub fn get_board(&self) -> &Vec<u128> {
+        self.board.as_ref()
+    }
+
+    pub fn get_opposite_board(&self) -> &Vec<u128> {
+        self.opposite.as_ref()
     }
 }
 
@@ -74,5 +95,13 @@ mod tests {
         anfield.clear();
         assert!(anfield.get_board().is_empty());
         assert!(anfield.counter == 0);
+    }
+    #[test]
+    fn collect_opposite_board() {
+        let mut anfield = Anfield::default();
+        anfield.set_size((4, 2));
+        anfield.collect_opposite(3);
+        anfield.collect_opposite(2);
+        assert!(anfield.get_opposite_board() == &[3, 2])
     }
 }

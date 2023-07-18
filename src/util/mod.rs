@@ -33,7 +33,7 @@ pub fn parse_line(input: &str) -> Option<&str> {
     input.split_whitespace().last()
 }
 
-pub fn parse_bits(input: &str, compare_to: (char, char)) -> u32 {
+pub fn parse_bits(input: &str, compare_to: (char, char)) -> u128 {
     let mut out = 0;
     for ch in input.chars() {
         out <<= 1;
@@ -44,8 +44,20 @@ pub fn parse_bits(input: &str, compare_to: (char, char)) -> u32 {
     out
 }
 
-pub fn count_overlaps(nbr1: u32, nbr2: u32) -> u32 {
+pub fn count_overlaps(nbr1: u128, nbr2: u128) -> u32 {
     (nbr1 & nbr2).count_ones()
+}
+
+pub fn merge_bits(input: &[u32], diff: usize, length: usize) -> u32 {
+    let mut out = 0;
+    for ix in 0..input.len() {
+        out |= input[ix];
+        out <<= diff;
+        if ix != input.len() - 1 {
+            out <<= length;
+        }
+    }
+    out
 }
 
 #[cfg(test)]
@@ -83,6 +95,11 @@ mod tests {
         assert!(!is_anfield_info("Any line"));
         assert!(is_piece_info("Piece 5 7:"));
         assert!(!is_piece_info("Any line"));
+    }
+    #[test]
+    fn merge_nbr_bits() {
+        assert!(merge_bits(&[1, 2, 3], 2, 2) == 1164);
+        assert!(merge_bits(&[1, 2, 3], 0, 2) == 27);
     }
 }
 
