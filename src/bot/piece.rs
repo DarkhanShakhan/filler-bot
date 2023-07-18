@@ -1,4 +1,4 @@
-use crate::util::{self, Validate};
+use crate::util::Validate;
 
 #[derive(Default)]
 pub struct Piece {
