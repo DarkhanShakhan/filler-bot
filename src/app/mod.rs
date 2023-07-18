@@ -21,25 +21,25 @@ impl App {
         let stdin = io::stdin();
         let mut input: String;
         for line in stdin.lock().lines() {
-            match line {
-                Ok(inp) => input = inp,
-                Err(err) => {
-                    print!("{err}");
-                    return;
-                }
-            }
+            // match line {
+            //     Ok(inp) => input = inp,
+            //     Err(_) => {
+            //         return;
+            //     }
+            // }
+            input = line.unwrap();
             if input.is_empty() {
                 continue;
             }
-            if self.is_switch_turn(input.as_str()) {
-                self.switch_turn();
-                continue;
-            }
+            // if self.is_switch_turn(input.as_str()) {
+            //     self.switch_turn();
+            //     continue;
+            // }
             match self.state {
                 State::Flow => self.flow(input.as_str()),
                 State::CollectingPiece => self.collect_piece(input.as_str()),
                 State::CollectingAnfield => self.collect_anfield(input.as_str()),
-                State::OppositeTurn => {}
+                State::OppositeTurn => self.opposite_turn(input.as_str()),
             }
         }
     }
@@ -103,16 +103,18 @@ impl App {
         let piece = self.piece.get_piece();
         let max = self.anfield.get_line_length() - self.piece.get_line_length();
         let opp_coords = algorithm::find_available_options(board, opp, piece, max as usize);
-        // let opts = algorithm::find_available_options(board, opp, piece, max);
-        let ten_millis = time::Duration::from_millis(10);
-        thread::sleep(ten_millis);
-
+        // let opts = algorithm::find_available_options(board, opp, piece, max);W
         println!("{} {}", opp_coords[0].1, opp_coords[0].0);
         // self.state = State::OppositeTurn;
         self.anfield.clear();
         self.piece.clear();
     }
-    // fn opposite_turn(&mut self) {}
+    fn opposite_turn(&mut self, input: &str) {
+        if self.is_switch_turn(input) {
+            println!("here");
+            self.state = State::Flow;
+        }
+    }
 
     fn is_switch_turn(&mut self, input: &str) -> bool {
         input.starts_with("-> Answer")
