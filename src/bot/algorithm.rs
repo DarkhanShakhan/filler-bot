@@ -1,5 +1,209 @@
 use crate::util::*;
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::vec;
+
+pub fn get_best_option(
+    board: &[u128],
+    opposite: &[u128],
+    options: &[(usize, usize)],
+    size: (usize, usize),
+) -> (usize, usize) {
+    let length = size.0;
+    let board_coords = get_coords(board, length);
+    let opp_coords = get_coords(opposite, length);
+    // let filled_board = get_filled_board(size, &board_coords, &opp_coords);
+    // println!("{:?}", filled_board);
+    let mut file = OpenOptions::new().append(true).open("nearest.txt").unwrap();
+    let nearest = get_target(size, &board_coords, &opp_coords);
+    let res = format!("Nearest: {:?}\n", nearest,);
+    file.write_all(res.as_bytes()).unwrap();
+    get_nearest_option(options, nearest)
+}
+
+fn get_coords(board: &[u128], length: usize) -> Vec<(usize, usize)> {
+    let mut coords = vec![];
+    for (ix, nbr) in board.iter().enumerate() {
+        for jx in 0..length {
+            if nbr >> jx & 1 == 1 {
+                coords.push((ix, 40 - jx - 1))
+            }
+        }
+    }
+    coords
+}
+
+pub fn get_filled_board(
+    size: (usize, usize),
+    points: &[(usize, usize)],
+    opp_points: &[(usize, usize)],
+) -> Vec<Vec<i32>> {
+    let mut board = vec![vec![0; size.0]; size.1];
+    for p in points.iter() {
+        board[p.0][p.1] = 1;
+    }
+    for p in opp_points.iter() {
+        board[p.0][p.1] = -1;
+    }
+    board
+}
+
+fn get_nearest_opposite_point(
+    board_coords: &[(usize, usize)],
+    opp_coords: &[(usize, usize)],
+    size: (usize, usize),
+) -> (usize, usize) {
+    let mut res = (0, 0);
+    let mut min_distance = usize::MAX;
+    // for b in board_coords {
+    let b = get_furthest_opposite_point(opp_coords, size);
+    for o in board_coords {
+        let dist = manhatan_distance(b, *o);
+        if dist < min_distance {
+            res = *o;
+            min_distance = dist;
+        }
+    }
+    // }
+    res
+}
+
+fn get_target(
+    size: (usize, usize),
+    my_points: &[(usize, usize)],
+    opp_points: &[(usize, usize)],
+) -> (usize, usize) {
+    let mut res = (0, 0);
+    // get all points nearest to each angle
+    let mut left_top = (0, 0);
+    let mut left_top_min_distance = usize::MAX;
+    let mut right_top = (0, 0);
+    let mut right_top_min_distance = usize::MAX;
+    let mut left_down = (0, 0);
+    let mut left_down_min_distance = usize::MAX;
+    let mut right_down = (0, 0);
+    let mut right_down_min_distance = usize::MAX;
+    for opp in opp_points {
+        let mut dist = manhatan_distance((0, size.1), *opp);
+        if dist < left_down_min_distance {
+            left_down = *opp;
+            left_down_min_distance = dist;
+        }
+        dist = manhatan_distance((0, 0), *opp);
+        if dist < left_top_min_distance {
+            left_top = *opp;
+            left_top_min_distance = dist;
+        }
+        dist = manhatan_distance((size.0, 0), *opp);
+        if dist < right_top_min_distance {
+            right_top = *opp;
+            right_top_min_distance = dist;
+        }
+        dist = manhatan_distance(size, *opp);
+        if dist < right_down_min_distance {
+            right_down = *opp;
+            right_down_min_distance = dist;
+        }
+    }
+    // let distances = vec![
+    //     left_down_min_distance,
+    //     left_top_min_distance,
+    //     right_down_min_distance,
+    //     right_top_min_distance,
+    // ];
+    let points = vec![left_down, left_top, right_down, right_top];
+    // let mut max_distance = 0;
+    // for (ix, dist) in distances.iter().enumerate() {
+    //     if max_distance < *dist {
+    //         res = angles[ix];
+    //         max_distance = *dist;
+    //     }
+    // }
+    let board = get_filled_board(size, my_points, opp_points);
+    let angles = vec![(0, size.1), (0, 0), size, (size.0, 0)];
+    let mut count = 0;
+    let mut max = 0;
+    for ix in 0..4 {
+        let (slope, intercept) = find_line_formula(
+            points[ix].0 as f64,
+            points[ix].1 as f64,
+            angles[ix].0 as f64,
+            angles[ix].1 as f64,
+        );
+        for jx in points[ix].0..angles[ix].0 {
+            let y = find_y(slope, intercept, jx as f64);
+            if board[jx][y] == 1 {
+                break;
+            }
+            count += 1;
+        }
+        if count >= max {
+            res = points[ix];
+            max = count;
+        }
+        count = 0;
+    }
+    res
+}
+
+fn find_line_formula(x1: f64, y1: f64, x2: f64, y2: f64) -> (f64, f64) {
+    let slope = (y2 - y1) / (x2 - x1);
+    let y_intercept = y1 - slope * x1;
+    (slope, y_intercept)
+}
+
+fn find_y(slope: f64, y_intercept: f64, x: f64) -> usize {
+    (x * slope + y_intercept) as usize
+}
+
+fn get_furthest_opposite_point(
+    opp_coords: &[(usize, usize)],
+    size: (usize, usize),
+) -> (usize, usize) {
+    let mut res = (0, 0);
+    let mut min_distance = usize::MAX;
+    for opp in opp_coords {
+        let mut dist = manhatan_distance((0, size.1), *opp);
+        if dist < min_distance {
+            res = *opp;
+            min_distance = dist;
+        }
+        dist = manhatan_distance((0, 0), *opp);
+        if dist < min_distance {
+            res = *opp;
+            min_distance = dist;
+        }
+        dist = manhatan_distance((size.0, 0), *opp);
+        if dist < min_distance {
+            res = *opp;
+            min_distance = dist;
+        }
+        dist = manhatan_distance(size, *opp);
+        if dist < min_distance {
+            res = *opp;
+            min_distance = dist;
+        }
+    }
+    // println!("{:?}", res);
+    res
+}
+
+fn get_nearest_option(options: &[(usize, usize)], nearest: (usize, usize)) -> (usize, usize) {
+    let mut res = (0, 0);
+    let mut min_distance = usize::MAX;
+    for opt in options {
+        let dist = manhatan_distance(*opt, nearest);
+        if dist < min_distance {
+            res = *opt;
+            min_distance = dist;
+        }
+    }
+    res
+}
+
+fn manhatan_distance(point_1: (usize, usize), point_2: (usize, usize)) -> usize {
+    point_1.0.abs_diff(point_2.0) + point_1.1.abs_diff(point_2.0)
+}
 
 pub fn find_available_options(
     board: &[u128],
@@ -32,18 +236,17 @@ fn get_overlaps(
 ) -> Vec<(usize, usize)> {
     let mut res = vec![];
     let mut count = 0;
+    let mut count_opp = 0;
     for i in 0..=max {
         for j in 0..piece.len() {
-            if count_overlaps(board_snap[j] >> i, piece[j]) == 1
-                && count_overlaps(opp_snap[j] >> i, piece[j]) == 0
-            {
-                count += 1;
-            }
+            count += count_overlaps(board_snap[j] >> i, piece[j]);
+            count_opp += count_overlaps(opp_snap[j] >> i, piece[j]);
         }
-        if count == 1 {
+        if count == 1 && count_opp == 0 {
             res.push((ix, max - i))
         }
         count = 0;
+        count_opp = 0;
     }
     res
 }

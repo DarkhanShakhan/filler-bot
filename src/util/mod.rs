@@ -8,7 +8,7 @@ pub fn is_anfield_info(input: &str) -> bool {
 }
 
 pub fn is_player_info(input: &str) -> bool {
-    input.starts_with("$$$ exec p1 :")
+    input.starts_with("$$$ exec ")
 }
 
 pub fn is_player_1(input: &str) -> bool {

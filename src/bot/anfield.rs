@@ -22,6 +22,9 @@ impl Anfield {
         self.size.0
     }
 
+    pub fn get_size(&self) -> (usize, usize) {
+        (self.size.0 as usize, self.size.1 as usize)
+    }
     pub fn collect(&mut self, input: u128) {
         if self.counter > 0 {
             self.board.push(input);
