@@ -290,7 +290,7 @@ fn find_territory_borders(
     points: &[(usize, usize)],
 ) -> Vec<(usize, usize)> {
     let mut res = vec![];
-    let k = 4;
+    let k = 8;
     let mut blocked: bool = false;
     let mut count_free: u32 = 0;
     let mut value: i32;
@@ -386,9 +386,5 @@ fn is_free_and_blocked(lane: &[i32]) -> (bool, bool) {
     return (free, blocked);
 }
 //TODO:
-// 1. find all opponent's open borders: open borders are points with at least one empty slot from each angle
-// 2. choose the nearest one
-// 3. define point's empty routes and choose the nearest one e.g. Point(4,4) has empty routes Point(2,4) or Point(6, 4).
-// need to choose between these two points
-// N.B. the point which is surrounded from each route except one and at least one route is occupied by me should n't be included
-// 4. turn the territory to that point
+// 1. ideas to improve algo: take a snapshot of the point to find out whether to attack it or not
+// 2. find out whether it is inner border or not || when measuring the distance check whether there is free pathway to the point
