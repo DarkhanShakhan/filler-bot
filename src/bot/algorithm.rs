@@ -1,6 +1,4 @@
 use crate::util::*;
-use std::fs::OpenOptions;
-use std::io::Write;
 use std::vec;
 
 pub fn get_best_option(
@@ -12,18 +10,12 @@ pub fn get_best_option(
     let length = size.0;
     let board_coords = get_coords(board, length);
     let opp_coords = get_coords(opposite, length);
-    // let filled_board = get_filled_board(size, &board_coords, &opp_coords);
-    // println!("{:?}", filled_board);
-    // let mut file = OpenOptions::new().append(true).open("nearest.txt").unwrap();
-    // let nearest = get_target(size, &board_coords, &opp_coords);
     let borders = find_territory_borders(
         (size.1, size.0),
         get_filled_board(size, &board_coords, &opp_coords),
         opp_coords.as_ref(),
     );
     let nearest = get_nearest_opposite_point(board_coords.as_ref(), borders.as_ref());
-    // let res = format!("Nearest: {:?}\n", nearest,);
-    // file.write_all(res.as_bytes()).unwrap();
     get_nearest_option(options, nearest)
 }
 
@@ -70,134 +62,6 @@ fn get_nearest_opposite_point(
             }
         }
     }
-    res
-}
-
-fn get_target(
-    size: (usize, usize),
-    my_points: &[(usize, usize)],
-    opp_points: &[(usize, usize)],
-) -> (usize, usize) {
-    let mut res = (0, 0);
-    // get all points nearest to each angle
-    let mut left_top = (0, 0);
-    let mut left_top_min_distance = usize::MAX;
-    let mut right_top = (0, 0);
-    let mut right_top_min_distance = usize::MAX;
-    let mut left_down = (0, 0);
-    let mut left_down_min_distance = usize::MAX;
-    let mut right_down = (0, 0);
-    let mut right_down_min_distance = usize::MAX;
-    for opp in opp_points {
-        let mut dist = manhatan_distance((size.1, 0), *opp);
-        if dist < left_down_min_distance {
-            left_down = *opp;
-            left_down_min_distance = dist;
-        }
-        dist = manhatan_distance((0, 0), *opp);
-        if dist < left_top_min_distance {
-            left_top = *opp;
-            left_top_min_distance = dist;
-        }
-        dist = manhatan_distance((0, size.0), *opp);
-        if dist < right_top_min_distance {
-            right_top = *opp;
-            right_top_min_distance = dist;
-        }
-        dist = manhatan_distance((size.0, size.1), *opp);
-        if dist < right_down_min_distance {
-            right_down = *opp;
-            right_down_min_distance = dist;
-        }
-    }
-    let distances = vec![
-        left_down_min_distance,
-        left_top_min_distance,
-        right_down_min_distance,
-        right_top_min_distance,
-    ];
-    let points = vec![left_down, left_top, right_down, right_top];
-    // let distances = vec![left_down_min_distance, left_top_min_distance, r]
-    // let mut max_distance = 0;
-    // for (ix, dist) in distances.iter().enumerate() {
-    //     if max_distance < *dist {
-    //         res = angles[ix];
-    //         max_distance = *dist;
-    //     }
-    // }
-    let board = get_filled_board(size, my_points, opp_points);
-    let angles = vec![(size.1, 0), (0, 0), (size.1, size.0), (0, size.0)];
-    // let mut min = i32::MAX;
-    // for (ix, dist) in distances.iter().enumerate() {
-    //     if *dist < min as usize {
-    //         res = angles[ix];
-    //         min = *dist as i32;
-    //     }
-    // }
-    let mut count = 0;
-    let mut max = 0;
-    for ix in 0..4 {
-        let (slope, intercept) = find_line_formula(
-            points[ix].0 as f64,
-            points[ix].1 as f64,
-            angles[ix].0 as f64,
-            angles[ix].1 as f64,
-        );
-        for jx in points[ix].0..angles[ix].0 {
-            let y = find_y(slope, intercept, jx as f64);
-            if board[jx][y] == 1 {
-                break;
-            }
-            count += 1;
-        }
-        if count >= max {
-            res = points[ix];
-            max = count;
-        }
-        count = 0;
-    }
-    res
-}
-
-fn find_line_formula(x1: f64, y1: f64, x2: f64, y2: f64) -> (f64, f64) {
-    let slope = (y2 - y1) / (x2 - x1);
-    let y_intercept = y1 - slope * x1;
-    (slope, y_intercept)
-}
-
-fn find_y(slope: f64, y_intercept: f64, x: f64) -> usize {
-    (x * slope + y_intercept) as usize
-}
-
-fn get_furthest_opposite_point(
-    opp_coords: &[(usize, usize)],
-    size: (usize, usize),
-) -> (usize, usize) {
-    let mut res = (0, 0);
-    let mut min_distance = usize::MAX;
-    for opp in opp_coords {
-        let mut dist = manhatan_distance((0, size.1), *opp);
-        if dist < min_distance {
-            res = *opp;
-            min_distance = dist;
-        }
-        dist = manhatan_distance((0, 0), *opp);
-        if dist < min_distance {
-            res = *opp;
-            min_distance = dist;
-        }
-        dist = manhatan_distance((size.0, 0), *opp);
-        if dist < min_distance {
-            res = *opp;
-            min_distance = dist;
-        }
-        dist = manhatan_distance(size, *opp);
-        if dist < min_distance {
-            res = *opp;
-            min_distance = dist;
-        }
-    }
-    // println!("{:?}", res);
     res
 }
 
@@ -262,26 +126,6 @@ fn get_overlaps(
         count_opp = 0;
     }
     res
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn find_available_opts() {
-        use super::*;
-        let res = find_available_options(&[8, 8, 0, 0], &[0, 0, 0, 2], &[2, 2], 2);
-        println!("{:?}", res);
-    }
-    #[test]
-    fn get_target_opt() {
-        use super::*;
-        let size = (8, 10);
-        let my_points = vec![(5, 3), (5, 4), (5, 5), (4, 5), (3, 5)];
-        let opp_points = vec![(8, 6), (8, 7), (7, 7), (7, 6)];
-        let target = get_target(size, &[], &opp_points);
-        println!("{:?}", target);
-        // assert!(target == (6, 7));
-    }
 }
 
 fn find_territory_borders(
@@ -372,19 +216,6 @@ fn find_territory_borders(
     res
 }
 
-fn is_free_and_blocked(lane: &[i32]) -> (bool, bool) {
-    let mut blocked = false;
-    let mut free = true;
-    for l in lane {
-        if *l != 0 {
-            free = false;
-        }
-        if *l == 1 {
-            blocked = true;
-        }
-    }
-    return (free, blocked);
-}
 //TODO:
 // 1. ideas to improve algo: take a snapshot of the point to find out whether to attack it or not
 // 2. find out whether it is inner border or not || when measuring the distance check whether there is free pathway to the point
