@@ -1,3 +1,5 @@
+use std::ops::Add;
+
 pub enum InfoType {
     Anfield(Size),
     Piece(Size),
@@ -13,14 +15,8 @@ pub enum PlayerType {
 
 #[derive(Default, Clone, Copy)]
 pub struct Size {
-    pub height: i32,
-    pub width: i32,
-}
-
-impl Size {
-    pub fn as_usize(&self) -> (usize, usize) {
-        (self.height as usize, self.width as usize)
-    }
+    pub height: usize,
+    pub width: usize,
 }
 
 pub fn info_type(input: &str) -> Option<InfoType> {
@@ -54,12 +50,12 @@ pub fn parse_player_type(input: &str) -> Option<PlayerType> {
 }
 
 pub fn parse_size(input: &str) -> Option<Size> {
-    let size: Vec<i32> = input
+    let size: Vec<usize> = input
         .strip_suffix(':')?
         .split_whitespace()
         .rev()
         .take(2)
-        .map(|item| item.parse::<i32>().unwrap_or_default())
+        .map(|item| item.parse::<usize>().unwrap_or_default())
         .collect();
     match size.len() {
         2 => Some(Size {
@@ -94,5 +90,83 @@ pub trait Validate {
 
     fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+}
+
+pub struct Board {
+    board: Vec<Vec<i32>>,
+    mine_points: Vec<Point>,
+    opposite_points: Vec<Point>,
+}
+
+impl Board {
+    pub fn new(size: Size) -> Self {
+        Board {
+            board: vec![vec![0; size.width]; size.height],
+            mine_points: vec![],
+            opposite_points: vec![],
+        }
+    }
+    pub fn set_point(&mut self, point: Point) {
+        self.board[point.x][point.y] = i32::from(point.cell);
+        match point.cell {
+            CellOwnership::Mine => self.mine_points.push(point),
+            CellOwnership::Opponent => self.opposite_points.push(point),
+            CellOwnership::Empty => {}
+        }
+    }
+    pub fn get_point(&mut self, point: (usize, usize)) -> Point {
+        Point {
+            x: point.0,
+            y: point.1,
+            cell: CellOwnership::from(self.board[point.0][point.1]),
+        }
+    }
+}
+#[derive(Default, Copy, Clone)]
+pub struct Point {
+    pub x: usize,
+    pub y: usize,
+    pub cell: CellOwnership,
+}
+
+impl Point {
+    pub fn new(x: usize, y: usize, cell: CellOwnership) -> Self {
+        Point { x, y, cell }
+    }
+}
+
+impl Add for Point {
+    type Output = usize;
+    fn add(self, other: Self) -> usize {
+        self.x.abs_diff(other.x) + self.y.abs_diff(other.y)
+    }
+}
+
+#[derive(Default, Copy, Clone)]
+pub enum CellOwnership {
+    Mine,
+    Opponent,
+    #[default]
+    Empty,
+}
+
+impl From<i32> for CellOwnership {
+    fn from(nbr: i32) -> Self {
+        match nbr {
+            1 => CellOwnership::Mine,
+            -1 => CellOwnership::Opponent,
+            _ => CellOwnership::Empty,
+        }
+    }
+}
+
+impl From<CellOwnership> for i32 {
+    fn from(cell_status: CellOwnership) -> Self {
+        match cell_status {
+            CellOwnership::Mine => 1,
+            CellOwnership::Opponent => -1,
+            CellOwnership::Empty => 0,
+        }
     }
 }

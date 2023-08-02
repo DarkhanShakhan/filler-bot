@@ -1,0 +1,8 @@
+Nearest: (24, 6)
+Nearest: (24, 6)
+Nearest: (24, 6)
+Nearest: (3, 4)
+Nearest: (3, 4)
+Nearest: (3, 4)
+Nearest: (3, 4)
+Nearest: (12, 8)

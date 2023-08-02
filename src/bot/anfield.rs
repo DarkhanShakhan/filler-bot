@@ -5,7 +5,7 @@ pub struct Anfield {
     board: Vec<u128>,
     opposite: Vec<u128>,
     size: Size,
-    counter: i32,
+    counter: usize,
 }
 
 impl Anfield {
@@ -17,7 +17,7 @@ impl Anfield {
         self.size = size
     }
 
-    pub fn get_line_length(&self) -> i32 {
+    pub fn get_line_length(&self) -> usize {
         self.size.width
     }
 

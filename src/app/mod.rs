@@ -85,9 +85,9 @@ impl App {
         let opp = self.anfield.get_opposite_board();
         let piece = self.piece.get_piece();
         let max = self.anfield.get_line_length() - self.piece.get_line_length();
-        let options = algorithm::find_available_options(board, opp, piece, max as usize);
-        let size = self.anfield.get_size().as_usize();
-        let opt = get_best_option(board, opp, options.as_ref(), (size.1, size.0));
+        let options = algorithm::find_available_options(board, opp, piece, max);
+        let size = self.anfield.get_size();
+        let opt = get_best_option(board, opp, options.as_ref(), (size.width, size.height));
         println!("{} {}", opt.1, opt.0);
         self.reset();
     }

@@ -4,14 +4,14 @@ use crate::util::{Size, Validate};
 pub struct Piece {
     piece: Vec<u128>,
     size: Size,
-    counter: i32,
+    counter: usize,
 }
 
 impl Piece {
     pub fn set_size(&mut self, size: Size) {
         self.size = size
     }
-    pub fn get_line_length(&self) -> i32 {
+    pub fn get_line_length(&self) -> usize {
         self.size.width
     }
     pub fn collect(&mut self, input: u128) {

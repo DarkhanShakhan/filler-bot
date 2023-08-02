@@ -1,0 +1,22 @@
+input: $$$ exec p1 : [solution/filler_bot] State: Flow
+input: Anfield 20 15: State: Flow
+input:     01234567890123456789 State: CollectingAnfield
+input: 000 .................... State: CollectingAnfield
+input: 001 ...........aa....... State: CollectingAnfield
+input: 002 .........@aaa....... State: CollectingAnfield
+input: 003 .................... State: CollectingAnfield
+input: 004 .................... State: CollectingAnfield
+input: 005 .................... State: CollectingAnfield
+input: 006 .................... State: CollectingAnfield
+input: 007 .................... State: CollectingAnfield
+input: 008 .................... State: CollectingAnfield
+input: 009 .................... State: CollectingAnfield
+input: 010 ........s........... State: CollectingAnfield
+input: 011 ........ss.......... State: CollectingAnfield
+input: 012 ........ss.......... State: CollectingAnfield
+input: 013 .........$.......... State: CollectingAnfield
+input: 014 .................... State: CollectingAnfield
+input: Piece 3 3: State: Flow
+input: ... State: CollectingPiece
+input: OOO State: CollectingPiece
+input: OOO State: CollectingPiece

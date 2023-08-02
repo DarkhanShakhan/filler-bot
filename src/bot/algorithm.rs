@@ -1,5 +1,5 @@
-use crate::util::*;
-use std::vec;
+use crate::util::{self, *};
+use std::{ops::Add, vec};
 
 pub fn get_best_option(
     board: &[u128],
@@ -216,6 +216,64 @@ fn find_territory_borders(
     res
 }
 
-//TODO:
-// 1. ideas to improve algo: take a snapshot of the point to find out whether to attack it or not
-// 2. find out whether it is inner border or not || when measuring the distance check whether there is free pathway to the point
+fn best_option(board_bits: &[u128], opposite: &[u128], options: &[Point], size: Size) -> Point {
+    let width = size.width;
+    let mine = points(board_bits, width, CellOwnership::Mine);
+    let opponent = points(opposite, width, CellOwnership::Opponent);
+    //FIXME: get borders
+    let nearest = nearest_opposite_point(&mine, &opponent);
+    nearest_option(options, nearest)
+}
+
+fn points(board_bits: &[u128], width: usize, cell: util::CellOwnership) -> Vec<util::Point> {
+    let mut res = vec![];
+    for (ix, nbr) in board_bits.iter().enumerate() {
+        for jx in 0..width {
+            if nbr >> jx & 1 == 1 {
+                res.push(util::Point::new(ix, width - jx - 1, cell))
+            }
+        }
+    }
+    res
+}
+
+fn fill_board(size: Size, mine: &[(usize, usize)], opposite: &[(usize, usize)]) -> util::Board {
+    let mut board = Board::new(size);
+    mine.iter().for_each(|(x, y)| {
+        board.set_point(Point::new(*x, *y, CellOwnership::Mine));
+    });
+    opposite.iter().for_each(|(x, y)| {
+        board.set_point(Point::new(*x, *y, CellOwnership::Opponent));
+    });
+    board
+}
+
+fn nearest_opposite_point(mine: &[Point], opposite: &[Point]) -> Point {
+    let mut res: Point = Point::default();
+    let mut min_distance = usize::MAX;
+    let mut distance: usize;
+    for m in mine {
+        for o in opposite {
+            distance = *m + *o;
+            if distance < min_distance {
+                res = *o;
+                min_distance = distance;
+            }
+        }
+    }
+    res
+}
+
+fn nearest_option(options: &[Point], nearest_opp: Point) -> Point {
+    let mut res = Point::default();
+    let mut min_distance = usize::MAX;
+    let mut distance: usize;
+    for option in options {
+        distance = *option + nearest_opp;
+        if distance < min_distance {
+            res = *option;
+            min_distance = distance;
+        }
+    }
+    res
+}
