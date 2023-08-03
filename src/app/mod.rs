@@ -88,7 +88,7 @@ impl App {
         let options = algorithm::available_options(board, opp, piece, max);
         let size = self.anfield.get_size();
         let opt = best_option(board, opp, &options, size);
-        println!("{}", opt);
+        print!("{}", opt);
         self.reset();
     }
     fn reset(&mut self) {
