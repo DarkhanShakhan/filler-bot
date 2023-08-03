@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::ops::Add;
 
 pub enum InfoType {
@@ -95,6 +96,7 @@ pub trait Validate {
 
 pub struct Board {
     board: Vec<Vec<i32>>,
+    board_size: Size,
     mine_points: Vec<Point>,
     opposite_points: Vec<Point>,
 }
@@ -103,6 +105,7 @@ impl Board {
     pub fn new(size: Size) -> Self {
         Board {
             board: vec![vec![0; size.width]; size.height],
+            board_size: size,
             mine_points: vec![],
             opposite_points: vec![],
         }
@@ -115,12 +118,72 @@ impl Board {
             CellOwnership::Empty => {}
         }
     }
-    pub fn get_point(&mut self, point: (usize, usize)) -> Point {
-        Point {
-            x: point.0,
-            y: point.1,
-            cell: CellOwnership::from(self.board[point.0][point.1]),
+    // pub fn get_point(&mut self, point: (usize, usize)) -> Point {
+    //     Point {
+    //         x: point.0,
+    //         y: point.1,
+    //         cell: CellOwnership::from(self.board[point.0][point.1]),
+    //     }
+    // }
+    fn check_point(&self, point: &Point, x_coef: i32, y_coef: i32, k: usize) -> (bool, u32) {
+        let mut free = true;
+        let mut blocked = false;
+        for ix in 1..k {
+            match self.board[(point.x as i32 + (ix as i32 * x_coef)) as usize]
+                [(point.y as i32 + (ix as i32 * y_coef)) as usize]
+            {
+                0 => {}
+                1 => {
+                    blocked = true;
+                    free = false;
+                }
+                _ => free = false,
+            }
         }
+        match free {
+            true => (blocked, 1),
+            false => (blocked, 0),
+        }
+    }
+    pub fn borders(&self, points: &[Point], k: usize) -> Vec<Point> {
+        let mut res = vec![];
+        let mut blocked = false;
+        let mut count_free = 0;
+        let mut check_res: (bool, u32);
+        for p in points {
+            if p.x >= k {
+                check_res = self.check_point(p, -1, 0, k);
+                blocked = check_res.0;
+                count_free += check_res.1;
+            }
+            if p.x + k < self.board_size.height {
+                check_res = self.check_point(p, 1, 0, k);
+                blocked = check_res.0;
+                count_free += check_res.1;
+            }
+            if p.y >= k {
+                check_res = self.check_point(p, 0, -1, k);
+                blocked = check_res.0;
+                count_free += check_res.1;
+            }
+            if p.y + k < self.board_size.width {
+                check_res = self.check_point(p, 0, 1, k);
+                blocked = check_res.0;
+                count_free += check_res.1;
+            }
+            match count_free {
+                0 => {}
+                1 => {
+                    if !blocked {
+                        res.push(*p);
+                    }
+                }
+                _ => res.push(*p),
+            }
+            blocked = false;
+            count_free = 0;
+        }
+        res
     }
 }
 #[derive(Default, Copy, Clone)]
@@ -142,7 +205,21 @@ impl Add for Point {
         self.x.abs_diff(other.x) + self.y.abs_diff(other.y)
     }
 }
+impl Display for Point {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "{} {}", self.y, self.x)
+    }
+}
 
+impl From<(usize, usize)> for Point {
+    fn from(value: (usize, usize)) -> Self {
+        Point {
+            x: value.0,
+            y: value.1,
+            cell: CellOwnership::Empty,
+        }
+    }
+}
 #[derive(Default, Copy, Clone)]
 pub enum CellOwnership {
     Mine,

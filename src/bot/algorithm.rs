@@ -1,5 +1,5 @@
 use crate::util::{self, *};
-use std::{ops::Add, vec};
+use std::vec;
 
 pub fn get_best_option(
     board: &[u128],
@@ -102,6 +102,35 @@ pub fn find_available_options(
         );
     }
     res
+}
+
+pub fn available_options(
+    board: &[u128],
+    opposite: &[u128],
+    piece: &[u128],
+    max: usize,
+) -> Vec<Point> {
+    find_available_options(board, opposite, piece, max)
+        .iter()
+        .map(|p| Point::from(*p))
+        .collect()
+    // res
+    // let mut res = vec![];
+    // for ix in 0..board.len() - piece.len() {
+    //     let mut t: &[(usize, usize)] = get_overlaps(
+    //         &board[ix..(ix + piece.len())],
+    //         &opposite[ix..(ix + piece.len())],
+    //         piece,
+    //         max,
+    //         ix,
+    //     )
+    //     .as_mut();
+    //     // .iter()
+    //     // // .map(|point| Point::from(*point))
+    //     // .collect();
+    //     // res.append(t.as_mut());
+    // }
+    // res
 }
 
 fn get_overlaps(
@@ -216,12 +245,12 @@ fn find_territory_borders(
     res
 }
 
-fn best_option(board_bits: &[u128], opposite: &[u128], options: &[Point], size: Size) -> Point {
+pub fn best_option(board_bits: &[u128], opposite: &[u128], options: &[Point], size: Size) -> Point {
     let width = size.width;
     let mine = points(board_bits, width, CellOwnership::Mine);
     let opponent = points(opposite, width, CellOwnership::Opponent);
-    //FIXME: get borders
-    let nearest = nearest_opposite_point(&mine, &opponent);
+    let borders = fill_board(size, &mine, &opponent).borders(&opponent, 8);
+    let nearest = nearest_opposite_point(&mine, &borders);
     nearest_option(options, nearest)
 }
 
@@ -237,13 +266,13 @@ fn points(board_bits: &[u128], width: usize, cell: util::CellOwnership) -> Vec<u
     res
 }
 
-fn fill_board(size: Size, mine: &[(usize, usize)], opposite: &[(usize, usize)]) -> util::Board {
+fn fill_board(size: Size, mine: &[Point], opposite: &[Point]) -> util::Board {
     let mut board = Board::new(size);
-    mine.iter().for_each(|(x, y)| {
-        board.set_point(Point::new(*x, *y, CellOwnership::Mine));
+    mine.iter().for_each(|p| {
+        board.set_point(*p);
     });
-    opposite.iter().for_each(|(x, y)| {
-        board.set_point(Point::new(*x, *y, CellOwnership::Opponent));
+    opposite.iter().for_each(|p| {
+        board.set_point(*p);
     });
     board
 }
